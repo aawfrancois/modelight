@@ -2,7 +2,12 @@
   "name": "rbaaboud/modelight",
   "description": "Lightweight Model and Collection PHP classes",
   "type": "library",
-  "keywords": ["php", "model", "collection", "database"],
+  "keywords": [
+    "php",
+    "model",
+    "collection",
+    "database"
+  ],
   "require": {
     "php": ">=5.6"
   },

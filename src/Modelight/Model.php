@@ -12,6 +12,13 @@ abstract class Model
     protected $tableName = null;
 
     /**
+     * Array of primary key fileds
+     *
+     * @var array
+     */
+    protected $primaryKeys = [];
+
+    /**
      * Array field list
      *
      * @var array
@@ -19,19 +26,23 @@ abstract class Model
     protected $fields = [];
 
     /**
-     * Array of primary keys fileds
-     *
-     * @var array
-     */
-    protected $primaryKeys = [];
-
-    /**
      * Model constructor
      *
      * @param array $data Associative array: key = field name, value = field value
+     * @throws \Modelight\Exception
      */
     public function __construct(array $data = [])
     {
+        if (!is_string($this->tableName)) {
+            throw new \Modelight\Exception('$tableName property must be defined in ' . get_called_class());
+        }
+        if (!is_array($this->primaryKeys) || (is_array($this->primaryKeys) && count($this->primaryKeys) > 0)) {
+            throw new \Modelight\Exception('$primaryKeys property must be defined in ' . get_called_class());
+        }
+        if (!is_array($this->fields) || (is_array($this->fields) && count($this->fields) > 0)) {
+            throw new \Modelight\Exception('$fields property must be defined in ' . get_called_class());
+        }
+
         $this->setData($data);
     }
 
@@ -91,16 +102,6 @@ abstract class Model
     }
 
     /**
-     * Returns field list
-     *
-     * @return array
-     */
-    public function getFields()
-    {
-        return $this->fields;
-    }
-
-    /**
      * Returns primary keys fileds
      *
      * @return array
@@ -108,5 +109,15 @@ abstract class Model
     public function getPrimaryKeys()
     {
         return $this->primaryKeys;
+    }
+
+    /**
+     * Returns field list
+     *
+     * @return array
+     */
+    public function getFields()
+    {
+        return $this->fields;
     }
 }
