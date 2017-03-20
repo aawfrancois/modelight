@@ -14,5 +14,7 @@ class FakeModelWithoutFields extends \Modelight\Model
      *
      * @var array
      */
-    protected $primaryKeys = ['id_model'];
+    protected $primaryKeys = [
+        'id_model'
+    ];
 }

@@ -36,14 +36,32 @@ abstract class Model
         if (!is_string($this->tableName)) {
             throw new \Modelight\Exception('$tableName property must be defined in ' . get_called_class());
         }
-        if (!is_array($this->primaryKeys) || (is_array($this->primaryKeys) && count($this->primaryKeys) > 0)) {
+        if (!is_array($this->primaryKeys) || (is_array($this->primaryKeys) && count($this->primaryKeys) === 0)) {
             throw new \Modelight\Exception('$primaryKeys property must be defined in ' . get_called_class());
         }
-        if (!is_array($this->fields) || (is_array($this->fields) && count($this->fields) > 0)) {
+        if (!is_array($this->fields) || (is_array($this->fields) && count($this->fields) === 0)) {
             throw new \Modelight\Exception('$fields property must be defined in ' . get_called_class());
         }
 
         $this->setData($data);
+    }
+
+    /**
+     * Returns Model data
+     *
+     * @return array Associative array: key = field name, value = field value
+     */
+    public function getData()
+    {
+        $data = [];
+
+        foreach ($this->getFields() as $fieldName) {
+            $getterMethodName = $this->getGetterMethodName($fieldName);
+
+            $data[$fieldName] = $this->$getterMethodName();
+        }
+
+        return $data;
     }
 
     /**
@@ -76,7 +94,7 @@ abstract class Model
      */
     protected function getGetterMethodName($fieldName)
     {
-        return 'get' . ucfirst(implode('', array_map('ucfirst', preg_split("/[a-zA-Z]+/", $fieldName))));
+        return 'get' . ucfirst(implode('', array_map('ucfirst', preg_split("/[^a-z0-9]+/", $fieldName))));
     }
 
     /**
@@ -88,7 +106,7 @@ abstract class Model
      */
     protected function getSetterMethodName($fieldName)
     {
-        return 'set' . ucfirst(implode('', array_map('ucfirst', preg_split("/[a-zA-Z]+/", $fieldName))));
+        return 'set' . ucfirst(implode('', array_map('ucfirst', preg_split("/[^a-z0-9]+/", $fieldName))));
     }
 
     /**

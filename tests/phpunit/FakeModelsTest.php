@@ -3,7 +3,7 @@
 /**
  * @covers \Modelight\Model
  */
-final class ModelTest extends \PHPUnit\Framework\TestCase
+final class FakeModelsTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @expectedException \Modelight\Exception

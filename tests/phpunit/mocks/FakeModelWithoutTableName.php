@@ -14,5 +14,9 @@ class FakeModelWithoutTableName extends \Modelight\Model
      *
      * @var array
      */
-    protected $fields = ['id_model', 'field_1', 'field_2'];
+    protected $fields = [
+        'id_model',
+        'field_1',
+        'field_2'
+    ];
 }
