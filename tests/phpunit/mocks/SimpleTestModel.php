@@ -24,11 +24,24 @@ class SimpleTestModel extends \Modelight\Model
      * @var array
      */
     protected $fields = [
-        'id_test_model',
-        'field_int',
-        'field_varchar',
-        'field_text',
-        'field_datetime'
+        'id_test_model' => [
+            'type' => \PDO::PARAM_INT
+        ],
+        'field_int' => [
+            'type' => \PDO::PARAM_INT
+        ],
+        'field_varchar' => [
+            'type' => \PDO::PARAM_STR
+        ],
+        'field_text' => [
+            'type' => \PDO::PARAM_STR
+        ],
+        'field_datetime' => [
+            'type' => \PDO::PARAM_STR
+        ],
+        'john_doe_is_active' => [
+            'type' => \PDO::PARAM_BOOL
+        ]
     ];
 
     /**
@@ -65,6 +78,13 @@ class SimpleTestModel extends \Modelight\Model
      * @var string
      */
     protected $fieldDatetime = null;
+
+    /**
+     * Value of test_model.john_doe_is_active field
+     *
+     * @var bool
+     */
+    protected $johnDoeIsActive = true;
 
     /**
      * Returns value of test_model.id_test_model field
@@ -177,6 +197,29 @@ class SimpleTestModel extends \Modelight\Model
     public function setFieldDatetime($fieldDatetime)
     {
         $this->fieldDatetime = $fieldDatetime;
+
+        return $this;
+    }
+
+    /**
+     * Returns value of test_model.john_doe_is_active field
+     *
+     * @return string
+     */
+    public function getJohnDoeIsActive()
+    {
+        return $this->johnDoeIsActive;
+    }
+
+    /**
+     * Set value of test_model.john_doe_is_active field
+     *
+     * @param bool $johnDoeIsActive
+     * @return $this
+     */
+    public function setJohnDoeIsActive($johnDoeIsActive)
+    {
+        $this->johnDoeIsActive = $johnDoeIsActive;
 
         return $this;
     }

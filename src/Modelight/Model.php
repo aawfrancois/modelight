@@ -55,7 +55,7 @@ abstract class Model
     {
         $data = [];
 
-        foreach ($this->getFields() as $fieldName) {
+        foreach ($this->getFields() as $fieldName => $fieldDefinition) {
             $getterMethodName = $this->getGetterMethodName($fieldName);
 
             $data[$fieldName] = $this->$getterMethodName();
@@ -72,7 +72,7 @@ abstract class Model
      */
     public function setData(array $data = [])
     {
-        foreach ($this->getFields() as $fieldName) {
+        foreach ($this->getFields() as $fieldName => $fieldDefinition) {
             if (!array_key_exists($fieldName, $data)) {
                 continue;
             }

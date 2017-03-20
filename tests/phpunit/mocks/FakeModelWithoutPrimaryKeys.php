@@ -15,8 +15,14 @@ class FakeModelWithoutPrimaryKeys extends \Modelight\Model
      * @var array
      */
     protected $fields = [
-        'id_model',
-        'field_1',
-        'field_2'
+        'id_model' => [
+            'type' => \PDO::PARAM_INT
+        ],
+        'field_1' => [
+            'type' => \PDO::PARAM_STR
+        ],
+        'field_2' => [
+            'type' => \PDO::PARAM_BOOL
+        ]
     ];
 }

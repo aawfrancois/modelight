@@ -57,12 +57,15 @@ final class SimpleTestModelTest extends \PHPUnit\Framework\TestCase
             'field_text' => $expectedFieldText
         ]);
 
+        $model->setJohnDoeIsActive(false);
+
         $this->assertEquals([
             'id_test_model' => null,
             'field_int' => 12, // field_int has 12 as default value :)
             'field_varchar' => null,
             'field_text' => $expectedFieldText,
-            'field_datetime' => null
+            'field_datetime' => null,
+            'john_doe_is_active' => false
         ], $model->getData());
     }
 }
