@@ -15,7 +15,7 @@ class SimpleTestModel extends \Modelight\Model
      * @var array
      */
     protected $primaryKeys = [
-        'id_model'
+        'id_test_model'
     ];
 
     /**
