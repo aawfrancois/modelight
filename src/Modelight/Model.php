@@ -12,11 +12,11 @@ abstract class Model
     protected $tableName = null;
 
     /**
-     * Array of primary key fileds
+     * Primary key filed name
      *
      * @var array
      */
-    protected $primaryKeys = [];
+    protected $primaryKey = null;
 
     /**
      * Array field list
@@ -36,8 +36,8 @@ abstract class Model
         if (!is_string($this->tableName)) {
             throw new \Modelight\Exception('$tableName property must be defined in ' . get_called_class());
         }
-        if (!is_array($this->primaryKeys) || (is_array($this->primaryKeys) && count($this->primaryKeys) === 0)) {
-            throw new \Modelight\Exception('$primaryKeys property must be defined in ' . get_called_class());
+        if (!is_string($this->primaryKey)) {
+            throw new \Modelight\Exception('$primaryKey property must be defined in ' . get_called_class());
         }
         if (!is_array($this->fields) || (is_array($this->fields) && count($this->fields) === 0)) {
             throw new \Modelight\Exception('$fields property must be defined in ' . get_called_class());
@@ -56,9 +56,7 @@ abstract class Model
         $data = [];
 
         foreach ($this->getFields() as $fieldName => $fieldDefinition) {
-            $getterMethodName = $this->getGetterMethodName($fieldName);
-
-            $data[$fieldName] = $this->$getterMethodName();
+            $data[$fieldName] = $this->get($fieldName);
         }
 
         return $data;
@@ -77,10 +75,37 @@ abstract class Model
                 continue;
             }
 
-            $setterMethodName = $this->getSetterMethodName($fieldName);
-
-            $this->$setterMethodName($data[$fieldName]);
+            $this->set($fieldName, $data[$fieldName]);
         }
+
+        return $this;
+    }
+
+    /**
+     * Get Model data for a specific field
+     *
+     * @param string $fieldName
+     * @return mixed
+     */
+    public function get($fieldName)
+    {
+        $getterMethodName = $this->getGetterMethodName($fieldName);
+
+        return $this->$getterMethodName();
+    }
+
+    /**
+     * Set Model data for a specific field
+     *
+     * @param string $fieldName
+     * @param mixed $value
+     * @return $this
+     */
+    public function set($fieldName, $value)
+    {
+        $setterMethodName = $this->getSetterMethodName($fieldName);
+
+        $this->$setterMethodName($value);
 
         return $this;
     }
@@ -120,13 +145,13 @@ abstract class Model
     }
 
     /**
-     * Returns primary keys fileds
+     * Returns primary key filed name
      *
      * @return array
      */
-    public function getPrimaryKeys()
+    public function getPrimaryKey()
     {
-        return $this->primaryKeys;
+        return $this->primaryKey;
     }
 
     /**

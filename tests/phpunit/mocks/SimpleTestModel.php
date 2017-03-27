@@ -10,13 +10,11 @@ class SimpleTestModel extends \Modelight\Model
     protected $tableName = 'test_model';
 
     /**
-     * Array of primary keys fileds
+     * Primary key filed name
      *
      * @var array
      */
-    protected $primaryKeys = [
-        'id_test_model'
-    ];
+    protected $primaryKey = 'id_test_model';
 
     /**
      * Array field list

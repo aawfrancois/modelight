@@ -18,7 +18,7 @@ final class FakeModelsTest extends \PHPUnit\Framework\TestCase
      */
     public function testCannotInstanciateModelWithoutPrimaryKeys()
     {
-        new \FakeModelWithoutPrimaryKeys();
+        new \FakeModelWithoutPrimaryKey();
     }
 
     /**

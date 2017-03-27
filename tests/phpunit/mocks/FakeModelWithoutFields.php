@@ -10,11 +10,9 @@ class FakeModelWithoutFields extends \Modelight\Model
     protected $tableName = 'fake_model_without_fields';
 
     /**
-     * Array of primary keys fileds
+     * Primary key filed name
      *
      * @var array
      */
-    protected $primaryKeys = [
-        'id_model'
-    ];
+    protected $primaryKey = 'id_model';
 }

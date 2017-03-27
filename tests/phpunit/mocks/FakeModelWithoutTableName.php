@@ -3,11 +3,11 @@
 class FakeModelWithoutTableName extends \Modelight\Model
 {
     /**
-     * Array of primary keys fileds
+     * Primary key filed name
      *
      * @var array
      */
-    protected $primaryKeys = ['id_model'];
+    protected $primaryKey = 'id_model';
 
     /**
      * Array field list

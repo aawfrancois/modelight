@@ -1,6 +1,6 @@
 <?php
 
-class FakeModelWithoutPrimaryKeys extends \Modelight\Model
+class FakeModelWithoutPrimaryKey extends \Modelight\Model
 {
     /**
      * Table name
