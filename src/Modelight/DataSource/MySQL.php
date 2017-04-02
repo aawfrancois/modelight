@@ -226,6 +226,16 @@ class MySQL implements \Modelight\DataSourceInterface
      */
     public function delete(\Modelight\Model $model)
     {
+        $query = "DELETE FROM " . $model->getTableName() . " WHERE " . $model->getPrimaryKey() . " = !" . $model->getPrimaryKey();
+
+        $fields = $model->getFields();
+
+        $this->query($query, [
+            $model->getPrimaryKey() => [
+                'value' => $model->get($model->getPrimaryKey()),
+                'type' => $fields[$model->getPrimaryKey()]['type']
+            ]
+        ]);
 
         return $model;
     }

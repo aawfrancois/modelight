@@ -14,7 +14,7 @@ abstract class Model
     /**
      * Primary key filed name
      *
-     * @var array
+     * @var string
      */
     protected $primaryKey = null;
 
@@ -156,7 +156,7 @@ abstract class Model
     /**
      * Returns primary key filed name
      *
-     * @return array
+     * @return string
      */
     public function getPrimaryKey()
     {
