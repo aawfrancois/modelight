@@ -54,6 +54,96 @@ class MySQL implements \Modelight\DataSourceInterface
     }
 
     /**
+     * Find one Model by primary key value
+     *
+     * @param string $modelClassName
+     * @param mixed $primaryKeyValue
+     * @return \Modelight\Model
+     * @throws \Modelight\Exception
+     */
+    public function find($modelClassName, $primaryKeyValue)
+    {
+        $refClass = new \ReflectionClass($modelClassName);
+        $defaultProperties = $refClass->getDefaultProperties();
+        if (!array_key_exists('primaryKey', $defaultProperties)) {
+            throw new \Modelight\Exception('primaryKey property is missing in ' . var_export($modelClassName, true) . ' class.');
+        }
+
+        return $this->findOneBy($modelClassName, [
+            $defaultProperties['primaryKey'] => $primaryKeyValue
+        ]);
+    }
+
+    /**
+     * Find all Model
+     *
+     * @param string $modelClassName
+     * @param int|null $limit
+     * @param int|null $offset
+     * @param array $sortBy
+     * @return \Modelight\Collection
+     * @throws \Modelight\Exception
+     */
+    public function findAll($modelClassName, $limit = null, $offset = null, array $sortBy = array())
+    {
+        $refClass = new \ReflectionClass($modelClassName);
+        $defaultProperties = $refClass->getDefaultProperties();
+        if (!array_key_exists('tableName', $defaultProperties)) {
+            throw new \Modelight\Exception('tableName property is missing in ' . var_export($modelClassName, true) . ' class.');
+        }
+
+        $query = "SELECT t.* FROM " . $defaultProperties['tableName'] . " t" .
+            $this->prepareSortByClause($sortBy) .
+            $this->prepareLimitClause($limit, $offset);
+
+        $collection = new \Modelight\Collection();
+
+        foreach ($this->query($query) as $row) {
+            $collection->append(new $modelClassName($row));
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Find Model by criterias
+     *
+     * @param string $modelClassName
+     * @param array $criterias
+     * @param int|null $limit
+     * @param int|null $offset
+     * @param array $sortBy
+     * @return \Modelight\Collection
+     * @throws \Modelight\Exception
+     */
+    public function findBy($modelClassName, array $criterias, $limit = null, $offset = null, array $sortBy = array())
+    {
+
+    }
+
+    /**
+     * Find one Model by criterias
+     *
+     * @param string $modelClassName
+     * @param array $criterias
+     * @param int|null $limit
+     * @param int|null $offset
+     * @param array $sortBy
+     * @return \Modelight\Model
+     * @throws \Modelight\Exception
+     */
+    public function findOneBy($modelClassName, array $criterias, $limit = null, $offset = null, array $sortBy = array())
+    {
+        $collection = $this->findBy($modelClassName, $criterias, $limit, $offset, $sortBy);
+
+        if (!$collection->offsetExists(0)) {
+            return null;
+        }
+
+        return $collection->offsetGet(0);
+    }
+
+    /**
      * Save Model
      *
      * @param \Modelight\Model $model
@@ -106,5 +196,41 @@ class MySQL implements \Modelight\DataSourceInterface
     {
 
         return $model;
+    }
+
+    /**
+     * Prepare sortBy clause
+     *
+     * @param array $sortyBy Ex.: ['fieldName1' => 'ASC', 'fieldNameTest' => 'DESC']
+     * @return string
+     */
+    protected function prepareSortByClause(array $sortyBy)
+    {
+        $clauses = [];
+        foreach ($sortyBy as $fieldName => $sortOrder) {
+            $clauses[] = $fieldName . " " . $sortOrder;
+        }
+
+        return count($clauses) > 0 ? " ORDER BY " . implode(', ', $clauses) : "";
+    }
+
+    /**
+     * Prepare limit clause
+     *
+     * @param int|null $limit
+     * @param int|null $offset
+     * @return string
+     */
+    protected function prepareLimitClause($limit = null, $offset = null)
+    {
+        if ($limit === null && $offset === null) {
+            return "";
+        }
+
+        if ($offset === null) {
+            return " LIMIT " . (int)$limit . " ";
+        }
+
+        return " LIMIT " . (int)$offset . "," . (int)$limit . " ";
     }
 }

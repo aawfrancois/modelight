@@ -75,7 +75,16 @@ abstract class Model
                 continue;
             }
 
-            $this->set($fieldName, $data[$fieldName]);
+            $fieldValue = $data[$fieldName];
+            if ($fieldDefinition['type'] === \PDO::PARAM_INT) {
+                $fieldValue = (int)$data[$fieldName];
+            } else if ($fieldDefinition['type'] === \PDO::PARAM_STR) {
+                $fieldValue = (string)$data[$fieldName];
+            } else if ($fieldDefinition['type'] === \PDO::PARAM_BOOL) {
+                $fieldValue = (bool)$data[$fieldName];
+            }
+
+            $this->set($fieldName, $fieldValue);
         }
 
         return $this;
