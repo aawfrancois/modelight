@@ -38,6 +38,9 @@ class MySQL implements \Modelight\DataSourceInterface
         $stmt = $this->pdo->prepare($query);
 
         foreach ($params as $fieldName => $fieldDefinition) {
+            if (!is_array($fieldDefinition)) {
+                throw new \Modelight\Exception('Field definition must be an array.');
+            }
             if (!array_key_exists('value', $fieldDefinition)) {
                 throw new \Modelight\Exception('value entry is missing in field definition.');
             }
@@ -68,9 +71,15 @@ class MySQL implements \Modelight\DataSourceInterface
         if (!array_key_exists('primaryKey', $defaultProperties)) {
             throw new \Modelight\Exception('primaryKey property is missing in ' . var_export($modelClassName, true) . ' class.');
         }
+        if (!array_key_exists('fields', $defaultProperties)) {
+            throw new \Modelight\Exception('fields property is missing in ' . var_export($modelClassName, true) . ' class.');
+        }
 
         return $this->findOneBy($modelClassName, [
-            $defaultProperties['primaryKey'] => $primaryKeyValue
+            $defaultProperties['primaryKey'] => [
+                'value' => $primaryKeyValue,
+                'type' =>  $defaultProperties['fields'][$defaultProperties['primaryKey']]['type']
+            ]
         ]);
     }
 
@@ -118,7 +127,30 @@ class MySQL implements \Modelight\DataSourceInterface
      */
     public function findBy($modelClassName, array $criterias, $limit = null, $offset = null, array $sortBy = array())
     {
+        $refClass = new \ReflectionClass($modelClassName);
+        $defaultProperties = $refClass->getDefaultProperties();
+        if (!array_key_exists('tableName', $defaultProperties)) {
+            throw new \Modelight\Exception('tableName property is missing in ' . var_export($modelClassName, true) . ' class.');
+        }
 
+        $query = "SELECT t.* FROM " . $defaultProperties['tableName'] . " t";
+
+        $whereClauses = [];
+        foreach ($criterias as $fieldName => $fieldValue) {
+            $whereClauses[] = " ( " . $fieldName . " = :" . $fieldName . " ) ";
+        }
+
+        $query .= count($whereClauses) > 0 ? " WHERE " . implode(' AND ', $whereClauses) : "";
+        $query .= $this->prepareSortByClause($sortBy);
+        $query .= $this->prepareLimitClause($limit, $offset);
+
+        $collection = new \Modelight\Collection();
+
+        foreach ($this->query($query, $criterias) as $row) {
+            $collection->append(new $modelClassName($row));
+        }
+
+        return $collection;
     }
 
     /**
