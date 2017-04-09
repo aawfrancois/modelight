@@ -63,34 +63,6 @@ abstract class Model
     }
 
     /**
-     * Set Model data
-     *
-     * @param array $data Associative array: key = field name, value = field value
-     * @return $this
-     */
-    public function setData(array $data = [])
-    {
-        foreach ($this->getFields() as $fieldName => $fieldDefinition) {
-            if (!array_key_exists($fieldName, $data)) {
-                continue;
-            }
-
-            $fieldValue = $data[$fieldName];
-            if ($fieldDefinition['type'] === \PDO::PARAM_INT) {
-                $fieldValue = (int)$data[$fieldName];
-            } else if ($fieldDefinition['type'] === \PDO::PARAM_STR) {
-                $fieldValue = (string)$data[$fieldName];
-            } else if ($fieldDefinition['type'] === \PDO::PARAM_BOOL) {
-                $fieldValue = (bool)$data[$fieldName];
-            }
-
-            $this->set($fieldName, $fieldValue);
-        }
-
-        return $this;
-    }
-
-    /**
      * Get Model data for a specific field
      *
      * @param string $fieldName
@@ -104,17 +76,55 @@ abstract class Model
     }
 
     /**
+     * Set Model data
+     *
+     * @param array $data Associative array: key = field name, value = field value
+     * @return $this
+     */
+    public function setData(array $data = [])
+    {
+        foreach ($this->getFields() as $fieldName => $fieldDefinition) {
+            if (!array_key_exists($fieldName, $data)) {
+                continue;
+            }
+
+            $this->set($fieldName, $data[$fieldName]);
+        }
+
+        return $this;
+    }
+
+    /**
      * Set Model data for a specific field
      *
      * @param string $fieldName
      * @param mixed $value
      * @return $this
+     * @throws \Modelight\Exception
      */
     public function set($fieldName, $value)
     {
+        $fields = $this->getFields();
+        if (!array_key_exists($fieldName, $fields)) {
+            throw new \Modelight\Exception('Unable to retrieve fieldName ' . json_encode($fieldName) . ' in $fields property of ' . get_called_class());
+        }
+
+        $fieldDefinition = $fields[$fieldName];
+
+        $fieldValue = $value;
+        if ($fieldValue === null) {
+            $fieldValue = null;
+        } else if ($fieldDefinition['type'] === \PDO::PARAM_INT) {
+            $fieldValue = (int)$value;
+        } else if ($fieldDefinition['type'] === \PDO::PARAM_STR) {
+            $fieldValue = (string)$value;
+        } else if ($fieldDefinition['type'] === \PDO::PARAM_BOOL) {
+            $fieldValue = (bool)$value;
+        }
+
         $setterMethodName = $this->getSetterMethodName($fieldName);
 
-        $this->$setterMethodName($value);
+        $this->$setterMethodName($fieldValue);
 
         return $this;
     }

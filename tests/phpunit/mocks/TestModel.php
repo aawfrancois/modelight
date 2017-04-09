@@ -1,6 +1,6 @@
 <?php
 
-class SimpleTestModel extends \Modelight\Model
+class TestModel extends \Modelight\Model
 {
     /**
      * Table name

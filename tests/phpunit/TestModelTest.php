@@ -3,20 +3,20 @@
 /**
  * @covers \Modelight\Model
  */
-final class SimpleTestModelTest extends \PHPUnit\Framework\TestCase
+final class TestModelTest extends \PHPUnit\Framework\TestCase
 {
-    public function testCanInstanciateSimpleTestModel()
+    public function testCanInstanciateTestModel()
     {
-        $model = new \SimpleTestModel();
+        $model = new \TestModel();
 
         $this->assertInstanceOf(\Modelight\Model::class, $model);
     }
 
     public function testCanFormatGetterMethodName()
     {
-        $model = new \SimpleTestModel();
+        $model = new \TestModel();
 
-        $method = new \ReflectionMethod('SimpleTestModel', 'getGetterMethodName');
+        $method = new \ReflectionMethod('TestModel', 'getGetterMethodName');
         $method->setAccessible(true);
 
         $this->assertEquals('getFieldInt', $method->invoke($model, 'field_int'));
@@ -25,9 +25,9 @@ final class SimpleTestModelTest extends \PHPUnit\Framework\TestCase
 
     public function testCanFormatSetterMethodName()
     {
-        $model = new \SimpleTestModel();
+        $model = new \TestModel();
 
-        $method = new \ReflectionMethod('SimpleTestModel', 'getSetterMethodName');
+        $method = new \ReflectionMethod('TestModel', 'getSetterMethodName');
         $method->setAccessible(true);
 
         $this->assertEquals('setFieldInt', $method->invoke($model, 'field_int'));
@@ -35,11 +35,11 @@ final class SimpleTestModelTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('setFieldIntAnd123and', $method->invoke($model, 'field_int_and_123and'));
     }
 
-    public function testCanSetSimpleTestModelData()
+    public function testCanSetTestModelData()
     {
         $expectedFieldVarchar = 'Hello!';
 
-        $model = new \SimpleTestModel([
+        $model = new \TestModel([
             'field_varchar' => $expectedFieldVarchar
         ]);
 
@@ -49,11 +49,11 @@ final class SimpleTestModelTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(12, $model->getFieldInt());
     }
 
-    public function testCanGetSimpleTestModelData()
+    public function testCanGetTestModelData()
     {
         $expectedFieldText = 'Hello!';
 
-        $model = new \SimpleTestModel([
+        $model = new \TestModel([
             'field_text' => $expectedFieldText
         ]);
 

@@ -2,7 +2,7 @@
 
 namespace Modelight\DataSource;
 
-class MySQL implements \Modelight\DataSourceInterface
+class MySQL extends \Modelight\DataSource implements \Modelight\DataSourceInterface
 {
     /**
      * @var \PDO
@@ -30,13 +30,53 @@ class MySQL implements \Modelight\DataSourceInterface
      *
      * @param string $query
      * @param array $params
-     * @return array
+     * @return int Number of affected rows
      * @throws \Modelight\Exception
      */
-    public function query($query, array $params = array())
+    public function execute($query, array $params = array())
     {
         $stmt = $this->pdo->prepare($query);
 
+        $this->bindParams($stmt, $params);
+
+        if (!$stmt->execute()) {
+            throw new \Modelight\Exception('Unexpected PDO result. PDOStatement::execute returns false. errorInfo: ' . json_encode($stmt->errorInfo()));
+        }
+
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Executes query for fetching results
+     *
+     * @param string $query
+     * @param array $params
+     * @return array
+     * @throws \Modelight\Exception
+     */
+    public function fetch($query, array $params = array())
+    {
+        $stmt = $this->pdo->prepare($query);
+
+        $this->bindParams($stmt, $params);
+
+        if (!$stmt->execute()) {
+            throw new \Modelight\Exception('Unexpected PDO result. PDOStatement::execute returns false. errorInfo: ' . json_encode($stmt->errorInfo()));
+        }
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Runs PDOStatement::bindValue for each given param
+     *
+     * @param \PDOStatement $stmt
+     * @param array $params
+     * @return $this
+     * @throws \Modelight\Exception
+     */
+    protected function bindParams(\PDOStatement $stmt, array $params = array())
+    {
         foreach ($params as $fieldName => $fieldDefinition) {
             if (!is_array($fieldDefinition)) {
                 throw new \Modelight\Exception('Field definition must be an array.');
@@ -51,9 +91,7 @@ class MySQL implements \Modelight\DataSourceInterface
             $stmt->bindValue($fieldName, $fieldDefinition['value'], $fieldDefinition['type']);
         }
 
-        $stmt->execute();
-
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $this;
     }
 
     /**
@@ -78,7 +116,7 @@ class MySQL implements \Modelight\DataSourceInterface
         return $this->findOneBy($modelClassName, [
             $defaultProperties['primaryKey'] => [
                 'value' => $primaryKeyValue,
-                'type' =>  $defaultProperties['fields'][$defaultProperties['primaryKey']]['type']
+                'type' => $defaultProperties['fields'][$defaultProperties['primaryKey']]['type']
             ]
         ]);
     }
@@ -107,7 +145,7 @@ class MySQL implements \Modelight\DataSourceInterface
 
         $collection = new \Modelight\Collection();
 
-        foreach ($this->query($query) as $row) {
+        foreach ($this->fetch($query) as $row) {
             $collection->append(new $modelClassName($row));
         }
 
@@ -146,7 +184,7 @@ class MySQL implements \Modelight\DataSourceInterface
 
         $collection = new \Modelight\Collection();
 
-        foreach ($this->query($query, $criterias) as $row) {
+        foreach ($this->fetch($query, $criterias) as $row) {
             $collection->append(new $modelClassName($row));
         }
 
@@ -199,9 +237,39 @@ class MySQL implements \Modelight\DataSourceInterface
      *
      * @param \Modelight\Model $model
      * @return \Modelight\Model
+     * @throws \Modelight\Exception
      */
     public function insert(\Modelight\Model $model)
     {
+        $query = "INSERT INTO " . $model->getTableName() . " SET ";
+
+        $setClauses = [];
+        $params = [];
+
+        foreach ($model->getFields() as $fieldName => $fieldDefinition) {
+            if ($fieldName === $model->getPrimaryKey()) {
+                continue;
+            }
+
+            $setClauses[] = $fieldName . " = :" . $fieldName;
+
+            $params[$fieldName] = [
+                'value' => $model->get($fieldName),
+                'type' => $fieldDefinition['type']
+            ];
+        }
+
+        $query .= " " . implode(", ", $setClauses);
+
+        $stmt = $this->pdo->prepare($query);
+
+        $this->bindParams($stmt, $params);
+
+        if (!$stmt->execute()) {
+            throw new \Modelight\Exception('Unexpected PDO result. PDOStatement::execute returns false. errorInfo: ' . json_encode($stmt->errorInfo()));
+        }
+
+        $model->set($model->getPrimaryKey(), $this->pdo->lastInsertId());
 
         return $model;
     }
@@ -211,9 +279,30 @@ class MySQL implements \Modelight\DataSourceInterface
      *
      * @param \Modelight\Model $model
      * @return \Modelight\Model
+     * @throws \Modelight\Exception
      */
     public function update(\Modelight\Model $model)
     {
+        $query = "UPDATE " . $model->getTableName() . " SET ";
+
+        $setClauses = [];
+        $params = [];
+
+        foreach ($model->getFields() as $fieldName => $fieldDefinition) {
+            if ($fieldName !== $model->getPrimaryKey()) {
+                $setClauses[] = $fieldName . " = :" . $fieldName;
+            }
+
+            $params[$fieldName] = [
+                'value' => $model->get($fieldName),
+                'type' => $fieldDefinition['type']
+            ];
+        }
+
+        $query .= " " . implode(", ", $setClauses);
+        $query .= " WHERE " . $model->getPrimaryKey() . " = :" . $model->getPrimaryKey() . " ";
+
+        $this->execute($query, $params);
 
         return $model;
     }
@@ -223,14 +312,15 @@ class MySQL implements \Modelight\DataSourceInterface
      *
      * @param \Modelight\Model $model
      * @return \Modelight\Model
+     * @throws \Modelight\Exception
      */
     public function delete(\Modelight\Model $model)
     {
-        $query = "DELETE FROM " . $model->getTableName() . " WHERE " . $model->getPrimaryKey() . " = !" . $model->getPrimaryKey();
+        $query = "DELETE FROM " . $model->getTableName() . " WHERE " . $model->getPrimaryKey() . " = :" . $model->getPrimaryKey();
 
         $fields = $model->getFields();
 
-        $this->query($query, [
+        $this->execute($query, [
             $model->getPrimaryKey() => [
                 'value' => $model->get($model->getPrimaryKey()),
                 'type' => $fields[$model->getPrimaryKey()]['type']

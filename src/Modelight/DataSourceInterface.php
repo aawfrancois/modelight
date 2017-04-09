@@ -9,10 +9,20 @@ interface DataSourceInterface
      *
      * @param string $query
      * @param array $params
+     * @return int Number of affected rows
+     * @throws \Modelight\Exception
+     */
+    public function execute($query, array $params = array());
+
+    /**
+     * Executes query for fetching results
+     *
+     * @param string $query
+     * @param array $params
      * @return array
      * @throws \Modelight\Exception
      */
-    public function query($query, array $params = array());
+    public function fetch($query, array $params = array());
 
     /**
      * Find one Model by primary key value
